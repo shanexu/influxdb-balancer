@@ -1,0 +1,53 @@
+FROM centos:7
+
+WORKDIR /root
+
+RUN mkdir /root/cvendor
+
+ADD cvendor/*.tar.gz cvendor/
+
+RUN yum -y install epel-release
+
+RUN yum install -y gcc golang gcc-c++ cmake3 make which glibc-static libstdc++-static
+
+ENV INFLUXDB_BALANCER_DEPS /root/cvendor
+ENV CPATH "$INFLUXDB_BALANCER_DEPS/zlib-1.2.11:$CPATH"
+ENV LD_LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/zlib-1.2.11:$LD_LIBRARY_PATH"
+ENV LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/zlib-1.2.11:$LIBRARY_PATH"
+ENV CPATH "$INFLUXDB_BALANCER_DEPS/bzip2-1.0.6:$CPATH"
+ENV LD_LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/bzip2-1.0.6:$LD_LIBRARY_PATH"
+ENV LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/bzip2-1.0.6:$LIBRARY_PATH"
+ENV CPATH "$INFLUXDB_BALANCER_DEPS/lz4-1.8.1.2/lib:$CPATH"
+ENV LD_LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/lz4-1.8.1.2/lib:$LD_LIBRARY_PATH"
+ENV LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/lz4-1.8.1.2/lib:$LIBRARY_PATH"
+ENV CPATH "$INFLUXDB_BALANCER_DEPS/google-snappy-4f7bd2d:$CPATH"
+ENV LD_LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/google-snappy-4f7bd2d:$LD_LIBRARY_PATH"
+ENV LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/google-snappy-4f7bd2d:$LIBRARY_PATH"
+ENV CPATH "$INFLUXDB_BALANCER_DEPS/zstd-1.3.3/lib:$CPATH"
+ENV CPATH "$INFLUXDB_BALANCER_DEPS/zstd-1.3.3/lib/dictBuilder:$CPATH"
+ENV LD_LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/zstd-1.3.3/lib:$LD_LIBRARY_PATH"
+ENV LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/zstd-1.3.3/lib:$LIBRARY_PATH"
+ENV CPATH "$INFLUXDB_BALANCER_DEPS/gflags-2.2.1/include:$CPATH"
+ENV LD_LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/gflags-2.2.1/lib:$LD_LIBRARY_PATH"
+ENV LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/gflags-2.2.1/lib:$LIBRARY_PATH"
+ENV CPATH "$INFLUXDB_BALANCER_DEPS/rocksdb-5.11.3/include:$CPATH"
+ENV LD_LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/rocksdb-5.11.3:$LD_LIBRARY_PATH"
+ENV LIBRARY_PATH "$INFLUXDB_BALANCER_DEPS/rocksdb-5.11.3:$LIBRARY_PATH"
+
+RUN cd cvendor/zlib-1.2.11 && ./configure && make
+
+RUN cd cvendor/bzip2-1.0.6 && make -f Makefile-libbz2_so && make
+
+RUN cd cvendor/lz4-1.8.1.2 && make
+
+RUN cd cvendor/google-snappy-4f7bd2d && cmake3 . && sed -i 's/CMAKE_CXX_FLAGS:STRING=/CMAKE_CXX_FLAGS:STRING=-fPIC/' CMakeCache.txt && make
+
+RUN cd cvendor/zstd-1.3.3 && make
+
+RUN cd cvendor/gflags-2.2.1 && cmake3 . && make
+
+RUN cd cvendor/rocksdb-5.11.3 && make -j4 shared_lib && USE_SSE=1 PORTABLE=1 make -j4 static_lib
+
+ENV GOROOT /usr/lib/golang
+
+ENV GOPATH /root

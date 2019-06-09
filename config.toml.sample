@@ -1,0 +1,11 @@
+[[gin]]
+name = "influxdb-balancer"
+bind-addr = "0.0.0.0:8888"
+use-kafka-output = true
+use-kafka-input = true
+kafka-group = "influxdb-balancer"
+metric-db = "influxdb-balancer"
+
+config-server = { name = "influxdb-balancer", bind-client = "http://127.0.0.1:2379", bind-peer = "http://127.0.0.1:2380", dir = "./data-etcd/influxdb-balancer", initial-cluster = "influxdb-balancer=http://127.0.0.1:2380" }
+
+data-dir = "./data"

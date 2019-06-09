@@ -1,0 +1,11 @@
+--- rocksdb-5.11.3/memtable/inlineskiplist.h	2019-03-17 17:13:31.820139685 +0800
++++ rocksdb-5.11.3/memtable/inlineskiplist_new.h	2019-03-17 17:13:20.216806244 +0800
+@@ -279,7 +279,7 @@
+   // next_[0].  This is used for passing data from AllocateKey to Insert.
+   void StashHeight(const int height) {
+     assert(sizeof(int) <= sizeof(next_[0]));
+-    memcpy(&next_[0], &height, sizeof(int));
++    memcpy(static_cast<void*>(&next_[0]), &height, sizeof(int));
+   }
+ 
+   // Retrieves the value passed to StashHeight.  Undefined after a call
